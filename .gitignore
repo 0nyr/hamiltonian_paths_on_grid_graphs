@@ -1,0 +1,20 @@
+# python
+__pycache__/
+.pytest_cache/
+*.pickle
+
+# python in Nix
+.venv/
+
+# logs and results
+PipelineNames.FirstGCNPipeline*.csv
+PipelineNames.RandomForestPipeline*.json
+random-forest-pipeline*.json
+first-gcn-pipeline*.json
+
+# environment variables
+.env
+
+# direnv
+.direnv
+doc/server/server.env
