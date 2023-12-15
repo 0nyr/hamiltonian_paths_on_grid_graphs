@@ -133,15 +133,17 @@ class GridGraph:
                 dfs(x + dx, y + dy, visited)
 
         visited = set()
+        start_cell: tuple[int, int] | None = None
         # Find the first cell
         for i in range(self.n):
             for j in range(self.m):
-                if self.cell_exists[i][j]:
+                if self.cell_exists[i][j] and start_cell is None:
                     start_cell = (i, j)
-                    dfs(start_cell[0], start_cell[1], visited)
                     break
-            if visited:
-                break
+        
+        # perform dfs from the first cell
+        assert start_cell is not None
+        dfs(start_cell[0], start_cell[1], visited)
 
         # Check if all cells are visited
         return all(self.cell_exists[i][j] == ((i, j) in visited) for i in range(self.n) for j in range(self.m))
@@ -211,8 +213,8 @@ class GridGraph:
 
 if __name__ == "__main__":
     grid = GridGraph(5, 7, RectangleGridCategory.FULL)
-    grid.add_periphery_holes(12)
-    #grid.add_holes(5)
+    grid.add_periphery_holes(5)
+    grid.add_holes(5)
     grid.print()
     grid.generate_tikz("test.tex")
 
