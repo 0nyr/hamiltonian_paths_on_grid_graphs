@@ -1,4 +1,3 @@
-from enum import Enum
 import random
 
 # Tikz template
@@ -17,19 +16,19 @@ TIKZ_FIG_END = """
 \\end{figure}
 """
 
-class GridGraph:
+class TileGridGraph:
     def __init__(
         self, 
         n: int, 
         m: int, 
     ):
         """
-        Creates a default grid graph of size n x m, with no holes.
+        Creates a default grid graph of size n x m tiles, with no holes.
         """
         self.n = n
         self.m = m
 
-        self.cell_exists = [[True for _ in range(m)] for _ in range(n)]
+        self.tile_exists = [[True for _ in range(m)] for _ in range(n)]
         
         if self.check_connected_graph() == False:
             raise Exception("The graph is not connected.")
@@ -50,7 +49,7 @@ class GridGraph:
                 
                 # case where there are already holes on the periphery
                 # in such a case, we need to add the cells that are adjacent to the holes
-                if self.cell_exists[i][j] == False:
+                if self.tile_exists[i][j] == False:
                     for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
                         # check if the adjacent cell is in the grid
                         if 0 <= i + dx < self.n and 0 <= j + dy < self.m:
@@ -77,7 +76,7 @@ class GridGraph:
 
         for k in range(nb_holes):
             i, j = __add_one_periphery_hole()
-            self.cell_exists[i][j] = False
+            self.tile_exists[i][j] = False
         
         if self.check_connected_graph() == False:
             raise Exception("The graph is not connected.")
@@ -106,7 +105,7 @@ class GridGraph:
         This graph is not connected.
         """
         def dfs(x, y, visited):
-            if (x, y) in visited or not (0 <= x < self.n and 0 <= y < self.m) or not self.cell_exists[x][y]:
+            if (x, y) in visited or not (0 <= x < self.n and 0 <= y < self.m) or not self.tile_exists[x][y]:
                 return
             visited.add((x, y))
             for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
@@ -117,7 +116,7 @@ class GridGraph:
         # Find the first cell
         for i in range(self.n):
             for j in range(self.m):
-                if self.cell_exists[i][j] and start_cell is None:
+                if self.tile_exists[i][j] and start_cell is None:
                     start_cell = (i, j)
                     break
 
@@ -127,7 +126,7 @@ class GridGraph:
         dfs(start_cell[0], start_cell[1], visited)
 
         # Check if all cells are visited
-        return all(self.cell_exists[i][j] == ((i, j) in visited) for i in range(self.n) for j in range(self.m))
+        return all(self.tile_exists[i][j] == ((i, j) in visited) for i in range(self.n) for j in range(self.m))
 
 
     def add_holes(self, nb_holes: int):
@@ -149,7 +148,7 @@ class GridGraph:
         holes_indices = random.sample(inner_indices, min(nb_holes, len(inner_indices)))
 
         for i, j in holes_indices:
-            self.cell_exists[i][j] = False
+            self.tile_exists[i][j] = False
     
     def make_narrow(self):
         """
@@ -163,7 +162,7 @@ class GridGraph:
 
         # Put all inner cells to False
         for i, j in inner_indices:
-            self.cell_exists[i][j] = False
+            self.tile_exists[i][j] = False
         
         if self.check_connected_graph() == False:
             raise Exception("The graph is not connected.")
@@ -194,7 +193,7 @@ class GridGraph:
         # Draw the tiles
         for i in range(self.n):
             for j in range(self.m):
-                if self.cell_exists[i][j]:
+                if self.tile_exists[i][j]:
                     tikz_code += f"\t\t\\draw[fill=gray!20, draw=black, very thick] ({j},{-i}) rectangle ({j+1},{-i-1});\n"
         
         tikz_code += "\n\t\t % Inner cells\n"
@@ -202,7 +201,7 @@ class GridGraph:
         # Draw the inner cells
         for i in range(self.n):
             for j in range(self.m):
-                if self.cell_exists[i][j]:
+                if self.tile_exists[i][j]:
                     tikz_code += f"\t\t\\draw[draw=gray, thin] ({j},{-i}) rectangle ({j+0.5},{-i-0.5});\n"
                     tikz_code += f"\t\t\\draw[draw=gray, thin] ({j},{-i-0.5}) rectangle ({j+0.5},{-i-1});\n"
                     tikz_code += f"\t\t\\draw[draw=gray, thin] ({j+0.5},{-i}) rectangle ({j+1},{-i-0.5});\n"
@@ -219,12 +218,12 @@ class GridGraph:
         """
         for i in range(self.n):
             for j in range(self.m):
-                print('.' if not self.cell_exists[i][j] else 'x', end=' ')
+                print('.' if not self.tile_exists[i][j] else 'x', end=' ')
             print()
 
-def grid_graph_from_text(string: str) -> GridGraph:
+def tile_grid_graph_from_text(string: str) -> TileGridGraph:
     """
-    Generate a grid graph from a string.
+    Generate a tile grid graph from a string.
     Ex: 
     x x x x x x . 
     x x x . x x x 
@@ -238,14 +237,19 @@ def grid_graph_from_text(string: str) -> GridGraph:
     lines = string.split("\n")
     n = len(lines)
     m = len(lines[0])
-    grid_graph = GridGraph(n, m)
+    grid_graph = TileGridGraph(n, m)
 
     for i in range(n):
         for j in range(m):
-            grid_graph.cell_exists[i][j] = lines[i][j] == "x"
+            grid_graph.tile_exists[i][j] = lines[i][j] == "x"
     
     return grid_graph
 
+
+
+
+
+# Tests
 import unittest
 class TestGridGraph(unittest.TestCase):
     def test_graph_not_connected(self):
@@ -259,7 +263,7 @@ class TestGridGraph(unittest.TestCase):
         x . x x . x x
         x x . x x x x
         """
-        grid = grid_graph_from_text(grid_text.strip())
+        grid = tile_grid_graph_from_text(grid_text.strip())
         self.assertFalse(grid.check_connected_graph())
 
     def test_graph_connected(self):
@@ -273,48 +277,5 @@ class TestGridGraph(unittest.TestCase):
         x x x x x x x
         x x x . x x x
         """
-        grid = grid_graph_from_text(grid_text.strip())
+        grid = tile_grid_graph_from_text(grid_text.strip())
         self.assertTrue(grid.check_connected_graph())
-
-
-def gen_random_grid_graph(n: int, m: int) -> GridGraph:
-    """
-    Generate a random grid graph of size n x m, with nb_holes holes.
-    """
-    grid = GridGraph(n, m)
-
-    grid.add_periphery_holes(5)
-    grid.add_holes(3)
-    #grid.make_narrow()
-    grid.print()
-    grid.generate_tikz("test.tex")
-
-    return grid
-
-def gen_from_text_grid_graph() -> GridGraph:
-    """
-    Generate a grid graph from a text.
-    """
-
-    grid_text = """
-    . x x x x x x
-    x x . x x . x
-    x x x x . x x
-    x . x x x x .
-    x x x . x x x
-    """
-    grid = grid_graph_from_text(grid_text.strip())
-    grid.print()
-    grid.generate_tikz("test.tex")
-
-    return grid
-
-if __name__ == "__main__":
-    # generate random grid graph
-    #grid = gen_random_grid_graph(5, 5)
-
-    # generate grid graph from text
-    gen_from_text_grid_graph() 
-    
-    # tests
-    unittest.main()
