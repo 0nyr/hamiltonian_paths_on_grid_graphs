@@ -266,6 +266,20 @@ class TestGridGraph(unittest.TestCase):
         grid = tile_grid_graph_from_text(grid_text.strip())
         self.assertFalse(grid.check_connected_graph())
 
+    def test_graph_not_connected_2(self):
+        """
+        Test to check if the graph is correctly identified as not connected.
+        """
+        grid_text = """
+        x x x x . x x 
+        x . x . x x . 
+        . x . x x x x 
+        x x x x x x x 
+        x . x x x x . 
+        """
+        grid = tile_grid_graph_from_text(grid_text.strip())
+        self.assertFalse(grid.check_connected_graph())
+
     def test_graph_connected(self):
         """
         Test to check if the graph is correctly identified as connected.

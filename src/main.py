@@ -9,8 +9,11 @@ def gen_random_grid_graph(n: int, m: int) -> TileGridGraph:
 
     grid.add_periphery_holes(5)
     grid.add_holes(3)
+    
     #grid.make_narrow()
     #grid.generate_tikz("test.tex")
+
+    assert grid.check_connected_graph()
 
     return grid
 
@@ -38,11 +41,13 @@ if __name__ == "__main__":
 
     # generate random grid graph
     grid = gen_random_grid_graph(5, 7)
+    print("Grid graph:")
     grid.print()
 
     # cell grid graph
     cell_grid_graph = CellGridGraph(grid)
     cell_path_matrix = CellPathMatrix(cell_grid_graph)
+    print("Cell grid graph:")
     cell_path_matrix.print()
 
     
